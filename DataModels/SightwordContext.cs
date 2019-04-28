@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 namespace SightwordsApi.DataModels
 {
@@ -7,6 +8,7 @@ namespace SightwordsApi.DataModels
         {
         }
         public DbSet<Sightword> Sightwords { get; set; }
+        public DbSet<Answer> Answers { get; set; }
 
     }
 }
