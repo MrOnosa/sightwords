@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using SightwordsApi.Models;
+using SightwordsApi.DataModels;
+using SightwordsApi.ApiDtos;
 
 namespace SightwordsApi.Controllers
 {
@@ -10,6 +11,8 @@ namespace SightwordsApi.Controllers
     [ApiController]
     public class SightwordsController : ControllerBase
     {
+        private const int SIGHTWORDS_TO_QUEUE = 100;
+
         private readonly SightwordContext _context;
         private Random rand = new Random();
         public SightwordsController(SightwordContext context)
@@ -96,49 +99,36 @@ namespace SightwordsApi.Controllers
 
         // GET api/sightwords
         [HttpGet]
-        public ActionResult<SightWordSet> Get()
+        public ActionResult<LessonSet> Get()
         {
-            var set = new SightWordSet();
+            var set = new Queue<Sightword>(SIGHTWORDS_TO_QUEUE);
             var sightWords = _context.Sightwords.ToList();
             var start = rand.Next(0, sightWords.Count);
             Console.WriteLine("Starting with Sight Word #" + start + " of " + sightWords.Count);
-
-            set.Word1 = sightWords[start].Word;
-            set.Word2 = sightWords[(start + 1) % sightWords.Count].Word;
-            set.Word3 = sightWords[(start + 2) % sightWords.Count].Word;
-            return set;
+            do
+            {
+                set.Enqueue(sightWords[(start + set.Count) % sightWords.Count]);
+            } while (set.Count < SIGHTWORDS_TO_QUEUE);
+            return new LessonSet
+            {
+                Words = set
+            } ;
         }
 
-        // GET api/sightwords/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        [HttpPut("answer")]
+        [HttpPost("answer")]
+        // PUT/POST api/sightwords/answer
+        public void Answer([FromBody]Answer answer)
         {
-            return "value";
+            var word = _context.Sightwords.FirstOrDefault(s => s.Id == answer.SightwordId);
+            if(answer.PersistResult)
+            {
+                Console.WriteLine($"[Not Persisted] The answer for {word.Word} was {(answer.Correct ? "correct": "incorrect")}.");
+            }
+            else
+            {
+                //TODO: Log result.
+            }
         }
-
-        // POST api/sightwords
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/sightwords/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/sightwords/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
-    }
-
-    public class SightWordSet
-    {
-        public string Word1 { get; set; }
-        public string Word2 { get; set; }
-        public string Word3 { get; set; }
     }
 }

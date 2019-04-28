@@ -1,14 +1,15 @@
 {
-  "name": "Web",
+  "name": "SightwordsWeb",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "parcel watch src/index.html --out-dir ../wwwroot"
+    "dev": "parcel watch src/index.html --out-dir ../wwwroot",
+    "release": "parcel build src/index.html --out-dir ../wwwroot"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "react": "^16.8.6",
     "react-dom": "^16.8.6"

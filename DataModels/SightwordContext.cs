@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-namespace SightwordsApi.Models
+namespace SightwordsApi.DataModels
 {
     public class SightwordContext : DbContext
     {
