@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SightwordsApi.DataModels;
@@ -9,9 +10,10 @@ using SightwordsApi.DataModels;
 namespace SightwordsApi.Migrations
 {
     [DbContext(typeof(SightwordContext))]
-    partial class SightwordContextModelSnapshot : ModelSnapshot
+    [Migration("20190428174927_AnswersTable")]
+    partial class AnswersTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

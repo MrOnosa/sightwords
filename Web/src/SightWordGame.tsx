@@ -8,7 +8,8 @@ declare var process : {
 
 interface SightWordGameState {
   wordQueue?: SightWord[],
-  fetchingWords?: boolean
+  fetchingWords?: boolean,
+  persistAnswers?: boolean
 }
 
 interface SightWord {
@@ -102,7 +103,8 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
 
   state: SightWordGameState = {
     wordQueue: [{ word: "Fetching...", id: 0 }],
-    fetchingWords: true
+    fetchingWords: true,
+    persistAnswers: process.env.NODE_ENV === 'production'
   };
 
   componentDidMount() {
@@ -161,7 +163,7 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
     const answer:Answer = {
       sightwordId: sightword.id,
       correct: correct,
-      persistResult: false 
+      persistResult: this.state.persistAnswers 
     };
 
     fetch('api/sightwords/answer', {
@@ -202,6 +204,16 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
     }
   };
 
+  handleInputChange = (event) => {
+    const target = event.target;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+    const name = target.name;
+
+    this.setState({
+      [name]: value
+    });
+  }
+
   render() {
     const [sightword] = this.state.wordQueue;
     return (
@@ -209,6 +221,15 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
         <h1>{sightword.word}</h1>
         <button onClick={() => this.correct(sightword)} style={{ "color": "green", marginRight: "5px" }}>Correct</button>
         <button onClick={() => this.incorrect(sightword)} style={{ "color": "red" }}>Wrong</button>
+        <div>
+          <label>Save Results:
+            <input 
+              name="persistAnswers"
+              type="checkbox" 
+              checked={this.state.persistAnswers}
+              onChange={this.handleInputChange} />
+          </label>
+        </div>
       </div>
     );
   }

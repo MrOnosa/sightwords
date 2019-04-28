@@ -1,6 +1,6 @@
 namespace SightwordsApi.ApiDtos
 {
-    public class Answer
+    public class AnswerDTO
     {
         public int SightwordId { get; set; }
         public bool Correct { get; set; }

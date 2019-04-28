@@ -99,7 +99,7 @@ namespace SightwordsApi.Controllers
 
         // GET api/sightwords
         [HttpGet]
-        public ActionResult<LessonSet> Get()
+        public ActionResult<LessonSetDTO> Get()
         {
             var set = new Queue<Sightword>(SIGHTWORDS_TO_QUEUE);
             var sightWords = _context.Sightwords.ToList();
@@ -109,25 +109,39 @@ namespace SightwordsApi.Controllers
             {
                 set.Enqueue(sightWords[(start + set.Count) % sightWords.Count]);
             } while (set.Count < SIGHTWORDS_TO_QUEUE);
-            return new LessonSet
+            return new LessonSetDTO
             {
                 Words = set
-            } ;
+            };
         }
 
         [HttpPut("answer")]
         [HttpPost("answer")]
         // PUT/POST api/sightwords/answer
-        public void Answer([FromBody]Answer answer)
+        public void Answer([FromBody]AnswerDTO answer)
         {
             var word = _context.Sightwords.FirstOrDefault(s => s.Id == answer.SightwordId);
-            if(answer.PersistResult)
+            if (answer.PersistResult)
             {
-                Console.WriteLine($"[Not Persisted] The answer for {word.Word} was {(answer.Correct ? "correct": "incorrect")}.");
+                if (word != null)
+                {
+                    Answer answerResult = new Answer
+                    {
+                        SightwordId = answer.SightwordId,
+                        AnsweredCorrectly = answer.Correct,
+                        Date = DateTime.UtcNow
+                    };
+                    if(word.Answers == null)
+                    {
+                        word.Answers = new List<Answer>();
+                    }
+                    word.Answers.Add(answerResult);
+                    _context.SaveChanges();
+                }
             }
             else
             {
-                //TODO: Log result.
+                Console.WriteLine($"[Not Persisted] The answer for {word.Word} was {(answer.Correct ? "correct" : "incorrect")}.");
             }
         }
     }
