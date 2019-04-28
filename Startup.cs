@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using SightwordsApi.Models;
+using SightwordsApi.DataModels;
 
 namespace SightwordsApi
 {
@@ -26,6 +26,7 @@ namespace SightwordsApi
             var builder = new NpgsqlConnectionStringBuilder(Configuration.GetConnectionString("DefaultConnection"));
             //Pull secrets from secret storage
             //https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets
+            builder.Host = Configuration["DbHost"] ?? builder.Host;
             builder.Username = Configuration["DbUsername"] ?? builder.Username;
             builder.Password = Configuration["DbPassword"] ?? builder.Password;
             services.AddDbContext<SightwordContext>(options => options.UseNpgsql(builder.ConnectionString));
