@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel watch src/index.html --out-dir ../wwwroot",
-    "release": "parcel build src/index.html --out-dir ../wwwroot"
+    "release": "parcel build src/index.html --out-dir ../wwwroot",
+    "publish": "parcel build src/index.html --out-dir ../bin/Release/netcoreapp2.1/publish/wwwroot"
   },
   "keywords": [],
   "author": "",

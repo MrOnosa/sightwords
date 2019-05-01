@@ -6,12 +6,6 @@ declare var process : {
   }
 }
 
-interface SightWordGameState {
-  wordQueue?: SightWord[],
-  fetchingWords?: boolean,
-  persistAnswers?: boolean
-}
-
 interface SightWord {
   id: number,
   word: string
@@ -22,11 +16,32 @@ interface LessonSet
   words: SightWord[]
 }
 
-interface Answer
+interface AnswerDTO
 {
     sightwordId: number,
     correct: boolean,
     persistResult: boolean
+}
+
+interface SightwordAnswersSummaryDTO
+{
+    answeredCorrectly: number,
+    totalAnswers: number
+}
+
+interface Answer
+{
+  word: string,
+  correct: boolean,
+  answeredCorrectly?: number,
+  totalAnswers?: number
+}
+
+interface SightWordGameState {
+  wordQueue?: SightWord[],
+  answers?: Answer[],
+  fetchingWords?: boolean,
+  persistAnswers?: boolean
 }
 
 export default class SightWordGame extends React.PureComponent<{}, SightWordGameState> {
@@ -103,6 +118,7 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
 
   state: SightWordGameState = {
     wordQueue: [{ word: "Fetching...", id: 0 }],
+    answers: [],
     fetchingWords: true,
     persistAnswers: process.env.NODE_ENV === 'production'
   };
@@ -160,7 +176,16 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
   }
 
   answer = (sightword: SightWord, correct: boolean) => {
-    const answer:Answer = {
+    const newAnswer:Answer = {
+      word: sightword.word,
+      correct: correct
+    }
+    this.setState((prevState) => {
+      return {
+      answers: [newAnswer, ...prevState.answers]
+    }});
+
+    const answer:AnswerDTO = {
       sightwordId: sightword.id,
       correct: correct,
       persistResult: this.state.persistAnswers 
@@ -177,9 +202,22 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
       if (!response.ok) {
         throw new Error('Network request was not ok.');
       }
+      return response.json()
+    })
+    .then((summary: SightwordAnswersSummaryDTO) => {
+      this.setState((prevState) => {
+        return {
+        answers: prevState.answers.map((a) => {
+          if(a === newAnswer)
+            return {...a, answeredCorrectly: summary.answeredCorrectly, totalAnswers: summary.totalAnswers  }
+          return a;
+          })
+        }
+      });
+
       if (process.env.NODE_ENV === 'development')
       {
-        console.log('Answer logged');
+        console.log(JSON.stringify(summary));
       }
     })
     .catch((error) => {
@@ -216,11 +254,50 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
 
   render() {
     const [sightword] = this.state.wordQueue;
+    const answerRows = this.state.answers.map((answer, i) => {
+      return (
+        <tr key={i}>
+          <td>{answer.word}</td>
+          <td>{answer.correct ? "Correct" : "Wrong"}</td>
+          <td>{(answer.answeredCorrectly !== undefined ? answer.answeredCorrectly : "-") + " out of "}
+          {(answer.totalAnswers !== undefined ? answer.totalAnswers : "-")}
+          <br/>
+          {!!answer.totalAnswers ? Math.round(100 * (answer.answeredCorrectly/answer.totalAnswers)) : "---"}%
+          </td>
+        </tr>
+      );
+    })
+    const answerTable = this.state.answers.length > 0 ? (<div>
+      <table align="center">
+        <thead>
+          <tr>
+            <th colSpan={3}>
+              Answers
+            </th>                
+          </tr>
+          <tr>
+            <th>
+              Word
+            </th>
+            <th>
+              Result
+            </th>         
+            <th>
+              Record
+            </th>       
+          </tr>
+        </thead>
+        <tbody>
+          {answerRows}
+        </tbody>
+      </table>
+    </div>) : null;
     return (
       <div style={{ textAlign: "center" }}>
         <h1>{sightword.word}</h1>
         <button onClick={() => this.correct(sightword)} style={{ "color": "green", marginRight: "5px" }}>Correct</button>
         <button onClick={() => this.incorrect(sightword)} style={{ "color": "red" }}>Wrong</button>
+        <hr/>
         <div>
           <label>Save Results:
             <input 
@@ -230,6 +307,7 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
               onChange={this.handleInputChange} />
           </label>
         </div>
+        {answerTable}
       </div>
     );
   }
