@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using SightwordsApi.DataModels;
 using SightwordsApi.ApiDtos;
+using Microsoft.EntityFrameworkCore;
 
 namespace SightwordsApi.Controllers
 {
@@ -118,31 +119,42 @@ namespace SightwordsApi.Controllers
         [HttpPut("answer")]
         [HttpPost("answer")]
         // PUT/POST api/sightwords/answer
-        public void Answer([FromBody]AnswerDTO answer)
+        public SightwordAnswersSummaryDTO Answer([FromBody]AnswerDTO answer)
         {
-            var word = _context.Sightwords.FirstOrDefault(s => s.Id == answer.SightwordId);
+            var word = _context
+                            .Sightwords
+                            .Include(w => w.Answers)
+                            .FirstOrDefault(s => s.Id == answer.SightwordId);
+
+
+            if (word != null)
+            {
+                Answer answerResult = new Answer
+                {
+                    SightwordId = answer.SightwordId,
+                    AnsweredCorrectly = answer.Correct,
+                    Date = DateTime.UtcNow
+                };
+                if (word.Answers == null)
+                {
+                    word.Answers = new List<Answer>();
+                }
+                word.Answers.Add(answerResult);
+            }
             if (answer.PersistResult)
             {
-                if (word != null)
-                {
-                    Answer answerResult = new Answer
-                    {
-                        SightwordId = answer.SightwordId,
-                        AnsweredCorrectly = answer.Correct,
-                        Date = DateTime.UtcNow
-                    };
-                    if(word.Answers == null)
-                    {
-                        word.Answers = new List<Answer>();
-                    }
-                    word.Answers.Add(answerResult);
-                    _context.SaveChanges();
-                }
+                _context.SaveChanges();
             }
             else
             {
                 Console.WriteLine($"[Not Persisted] The answer for {word.Word} was {(answer.Correct ? "correct" : "incorrect")}.");
             }
+
+            return new SightwordAnswersSummaryDTO
+            {
+                AnsweredCorrectly = (word?.Answers?.Count(a => a.AnsweredCorrectly)).GetValueOrDefault(),
+                TotalAnswers = (word?.Answers?.Count()).GetValueOrDefault()
+            };
         }
     }
 }

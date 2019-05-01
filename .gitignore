@@ -34,3 +34,4 @@ wwwroot/
 
 # Keep it secret. Keep it safe.
 appsettings.Production.json
+Scripts/publish.ps1
