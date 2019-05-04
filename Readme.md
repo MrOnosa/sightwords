@@ -3,8 +3,7 @@
 A simple web app that shows Sight Words and measures success rates.
 
 ## Contributer Notes
-ASP.NET Core 2.1 and ReactJS are used for the backend and front end. This project uses [app secrets](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets) to protect sensitive information.
-EFCore is used to work with a PostgreSQL database.
+ASP.NET Core 2.1 and ReactJS are used for the backend and front end. EFCore is used to work with a PostgreSQL database.
 
 ### Bundling
 Parcel is used as our bundler. Change your directory to Web and run the following to actively watch for changes:

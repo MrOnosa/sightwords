@@ -24,11 +24,6 @@ namespace SightwordsApi
         {
             // Add framework services.
             var builder = new NpgsqlConnectionStringBuilder(Configuration.GetConnectionString("DefaultConnection"));
-            //Pull secrets from secret storage
-            //https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets
-            builder.Host = Configuration["DbHost"] ?? builder.Host;
-            builder.Username = Configuration["DbUsername"] ?? builder.Username;
-            builder.Password = Configuration["DbPassword"] ?? builder.Password;
             services.AddDbContext<SightwordContext>(options => options.UseNpgsql(builder.ConnectionString));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
