@@ -29,9 +29,11 @@ msbuild.err
 msbuild.wrn
 wwwroot/
 
-# Visual Studio 2015
+# Visual Studio 201X
 .vs/
+*.sln
 
 # Keep it secret. Keep it safe.
 appsettings.Production.json
 Scripts/publish.ps1
+

@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using SightwordsApi.DataModels;
 using SightwordsApi.ApiDtos;
-using Microsoft.EntityFrameworkCore;
+using SightwordsApi.DataModels;
 
 namespace SightwordsApi.Controllers
 {
@@ -12,10 +11,10 @@ namespace SightwordsApi.Controllers
     [ApiController]
     public class SightwordsController : ControllerBase
     {
-        private const int SIGHTWORDS_TO_QUEUE = 100;
+        private const int SightwordsToQueue = 100;
 
         private readonly SightwordContext _context;
-        private Random rand = new Random();
+        private readonly Random _rand = new Random();
         public SightwordsController(SightwordContext context)
         {
             _context = context;
@@ -102,59 +101,80 @@ namespace SightwordsApi.Controllers
         [HttpGet]
         public ActionResult<LessonSetDTO> Get()
         {
-            var set = new Queue<Sightword>(SIGHTWORDS_TO_QUEUE);
+            var set = new Queue<Sightword>(SightwordsToQueue);
             var sightWords = _context.Sightwords.ToList();
-            var start = rand.Next(0, sightWords.Count);
+            var start = _rand.Next(0, sightWords.Count);
             Console.WriteLine("Starting with Sight Word #" + start + " of " + sightWords.Count);
             do
             {
                 set.Enqueue(sightWords[(start + set.Count) % sightWords.Count]);
-            } while (set.Count < SIGHTWORDS_TO_QUEUE);
+            } while (set.Count < SightwordsToQueue);
             return new LessonSetDTO
             {
                 Words = set
             };
         }
 
-        [HttpPut("answer")]
         [HttpPost("answer")]
         // PUT/POST api/sightwords/answer
         public SightwordAnswersSummaryDTO Answer([FromBody]AnswerDTO answer)
         {
-            var word = _context
-                            .Sightwords
-                            .Include(w => w.Answers)
-                            .FirstOrDefault(s => s.Id == answer.SightwordId);
-
-
-            if (word != null)
+            Answer answerResult = new Answer
             {
-                Answer answerResult = new Answer
-                {
-                    SightwordId = answer.SightwordId,
-                    AnsweredCorrectly = answer.Correct,
-                    Date = DateTime.UtcNow
-                };
-                if (word.Answers == null)
-                {
-                    word.Answers = new List<Answer>();
-                }
-                word.Answers.Add(answerResult);
-            }
+                Id = 0,
+                SightwordId = answer.SightwordId,
+                AnsweredCorrectly = answer.Correct,
+                Date = DateTime.UtcNow
+            };
             if (answer.PersistResult)
             {
+                _context.Answers.Add(answerResult);
                 _context.SaveChanges();
             }
             else
             {
-                Console.WriteLine($"[Not Persisted] The answer for {word.Word} was {(answer.Correct ? "correct" : "incorrect")}.");
+                Console.WriteLine($"[Not Persisted] The answer for {answer.SightwordId} was {(answer.Correct ? "correct" : "incorrect")}.");
             }
+
+            var counts = _context
+                            .Answers
+                            .Where(a => a.SightwordId == answer.SightwordId)
+                            .Select(a => new
+                            {
+                                Correct = a.AnsweredCorrectly ? 1 : 0
+                            })
+                            .GroupBy(a => 1) 
+                            .Select(a => new
+                            {
+                                TotalAnswers = a.Count(),
+                                AnsweredCorrectly = a.Sum(e => e.Correct)
+                            })
+                            .FirstOrDefault();
 
             return new SightwordAnswersSummaryDTO
             {
-                AnsweredCorrectly = (word?.Answers?.Count(a => a.AnsweredCorrectly)).GetValueOrDefault(),
-                TotalAnswers = (word?.Answers?.Count()).GetValueOrDefault()
+                AnswerId = answerResult.Id,
+                AnsweredCorrectly = (counts?.AnsweredCorrectly).GetValueOrDefault(),
+                TotalAnswers = (counts?.TotalAnswers).GetValueOrDefault()
             };
+        }
+
+        [HttpDelete("answer")]
+        public int DeleteAnswer([FromBody]int answerId)
+        {
+            _context.Remove(new Answer {Id = answerId});
+            return _context.SaveChanges();
+        }
+
+        [HttpPut("answer")]
+        public int SwitchAnswer([FromBody]AnswerDTO answerDto)
+        {
+            var answer = _context.Answers.FirstOrDefault(a => a.Id == answerDto.Id);
+            if (answer != null)
+            {
+                answer.AnsweredCorrectly = answerDto.Correct;
+            }
+            return _context.SaveChanges();
         }
     }
 }
