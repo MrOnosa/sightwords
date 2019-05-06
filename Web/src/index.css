@@ -6,3 +6,8 @@ table td, table th { padding:5px;border:1px solid #000; }
 button:disabled {
     cursor: not-allowed;
 }
+
+.sightword {
+    font-family: 'Roboto', sans-serif;
+    font-size: 72px;
+}

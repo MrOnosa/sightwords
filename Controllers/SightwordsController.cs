@@ -101,18 +101,33 @@ namespace SightwordsApi.Controllers
         [HttpGet]
         public ActionResult<LessonSetDTO> Get()
         {
-            var set = new Queue<Sightword>(SightwordsToQueue);
+            var set = new List<Sightword>(SightwordsToQueue);
             var sightWords = _context.Sightwords.ToList();
             var start = _rand.Next(0, sightWords.Count);
             Console.WriteLine("Starting with Sight Word #" + start + " of " + sightWords.Count);
             do
             {
-                set.Enqueue(sightWords[(start + set.Count) % sightWords.Count]);
+                set.Add(sightWords[(start + set.Count) % sightWords.Count]);
             } while (set.Count < SightwordsToQueue);
             return new LessonSetDTO
             {
-                Words = set
+                Words = Jostle(set)
             };
+        }
+
+        private List<T> Jostle<T>(ICollection<T> items)
+        {
+            var jostledItems = new List<T>(items);
+            for(var i = 0; i < items.Count; i++){
+                var coinflip = _rand.Next(0, 2);
+                if(coinflip == 0){
+                    var temp = jostledItems[i];
+                    jostledItems[i] = jostledItems[(i + 1)%jostledItems.Count];
+                    jostledItems[(i + 1)%jostledItems.Count] = temp;
+                }
+            }
+
+            return jostledItems;
         }
 
         [HttpPost("answer")]

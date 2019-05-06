@@ -13,7 +13,8 @@
   "license": "MIT",
   "dependencies": {
     "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react-dom": "^16.8.6",
+    "webfontloader": "^1.6.28"
   },
   "devDependencies": {
     "@types/react": "^16.8.14",

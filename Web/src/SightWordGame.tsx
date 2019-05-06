@@ -383,7 +383,9 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
         </div>) : null;
         return (
             <div style={{ textAlign: "center" }}>
-                <h1>{sightword.word}</h1>
+                <div>
+                    <span className="sightword">{sightword.word}</span>
+                </div>
                 <button onClick={() => this.correct(sightword)} style={{ "color": "green", marginRight: "5px" }}>Correct</button>
                 &nbsp;&nbsp;
                 <button onClick={() => this.incorrect(sightword)} style={{ "color": "red" }}>Wrong</button>
