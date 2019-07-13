@@ -1,8 +1,10 @@
 import * as React from 'react';
+import Footer from './Footer';
 
 declare var process: {
     env: {
-        NODE_ENV: string
+        NODE_ENV: string,
+        npm_package_version: string
     }
 }
 
@@ -403,6 +405,7 @@ export default class SightWordGame extends React.PureComponent<{}, SightWordGame
                     </label>
                 </div>
                 {answerTable}
+                <Footer version={process.env.npm_package_version}/>
             </div>
         );
     }

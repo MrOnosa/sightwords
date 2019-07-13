@@ -11,3 +11,13 @@ button:disabled {
     font-family: 'Roboto', sans-serif;
     font-size: 72px;
 }
+
+.footer {
+    color: #888;
+    text-align: left;
+}
+
+.footer a {
+    color: #888;
+    text-decoration: none;
+}
