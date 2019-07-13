@@ -17,9 +17,10 @@
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {
-    "@types/react": "^16.8.14",
+    "@types/react": "^16.8.23",
     "@types/react-dom": "^16.8.4",
+    "lodash": ">=4.17.13",
     "parcel-bundler": "^1.12.3",
-    "typescript": "^3.4.4"
+    "typescript": "^3.5.3"
   }
 }
